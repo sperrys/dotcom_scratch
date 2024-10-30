@@ -14,20 +14,31 @@ jobs:
   scrape:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Runs a single command using the runners shell
-    - name: Send greeting
-      run: echo "Hello ${{ inputs.name }}"
     - name: Checkout Repo Code 
       uses: actions/checkout@v4
-    - name: List files that we care about 
+    - name: Generate Branch Name
+      id: branch-name
       run: |
-        find "$directory" -type f -name "*.md" | while read -r file; do
-        links=$(grep -oE 'https://[^ ]+' "$file")
-        if [[ -n "$links" ]]; then 
-          echo "$links"
-        fi
-        done
-    
+          TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
+          echo "branch_name=add-markdown-scanner-${TIMESTAMP}" >> $GITHUB_OUTPUT
+    - name: Create Branch
+      run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git checkout -b ${{ steps.branch-name.outputs.branch_name }}
+    - name: Commit and Push
+      run: |
+          touch images.txt
+          git add images.txt
+          git commit -m "Add Scraped images"
+          git push origin ${{ steps.branch-name.outputs.branch_name }}
+    - name: Create Pull Request
+      run: gh pr create -B base_branch -H branch_to_merge --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
