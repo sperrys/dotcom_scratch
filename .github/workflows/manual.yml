@@ -22,13 +22,12 @@ jobs:
       run: echo "Hello ${{ inputs.name }}"
     - name: Checkout Repo Code 
       uses: actions/checkout@v4
-    - name: List files that we care about...  
-      run: find . -iregex '.*\.\(md\|html\)' | while read -r file; do
+    - name: List files that we care about 
+      run: |
+        find "$directory" -type f -name "*.md" | while read -r file; do
         links=$(grep -oE 'https://[^ ]+' "$file")
-        if [[ -n $links" ]]; then 
-          echo -e \nLinks found in $file:"
+        if [[ -n "$links" ]]; then 
           echo "$links"
         fi
         done
-
     
