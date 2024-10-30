@@ -21,6 +21,7 @@ jobs:
     - name: Send greeting
       run: echo "Hello ${{ inputs.name }}"
     - name: Checkout Repo Code 
+      uses: actions/checkout@v4
     - name: List files that we care about...  
       run: ls *.{md, html}
 
