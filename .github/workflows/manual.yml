@@ -20,11 +20,8 @@ jobs:
     # Runs a single command using the runners shell
     - name: Send greeting
       run: echo "Hello ${{ inputs.name }}"
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-          path: main
+    - name: Checkout Repo Code 
     - name: List files that we care about...  
-      run: ls -a main/*.{md, html}
+      run: ls *.{md, html}
 
     
