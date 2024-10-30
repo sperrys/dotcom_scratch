@@ -24,7 +24,7 @@ jobs:
       uses: actions/checkout@v4
       with:
           path: main
-    - name: List Files
-      run: ls -a main
+    - name: List files that we care about...  
+      run: ls -a main/*.{md, html}
 
     
