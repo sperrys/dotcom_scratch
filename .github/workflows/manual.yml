@@ -34,6 +34,7 @@ jobs:
           git checkout -b ${{ steps.branch-name.outputs.branch_name }}
     
     - name: Create Assets directory if it doesn't exist 
+      run:
           if [ ! -d "assets" ]; then
             mkdir assets
           fi
