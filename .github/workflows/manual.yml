@@ -35,7 +35,7 @@ jobs:
     - name: Find HTTP URLs in markdown files
       run: |
         # Find all markdown files and search for HTTP URLs
-        find . -type f -name "*.md" -exec grep -Hn "http://" {} \; > http_urls.txt
+        find . -type f -name "*.md" -exec grep -Hn "https://" {} \; > http_urls.txt
     
         # Check if any HTTP URLs were found
         if [ -s http_urls.txt ]; then
