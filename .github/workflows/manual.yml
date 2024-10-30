@@ -32,10 +32,28 @@ jobs:
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
           git checkout -b ${{ steps.branch-name.outputs.branch_name }}
+    
+    - name: Create Assets directory if it doesn't exist 
+          if [ ! -d "assets" ]; then
+            mkdir assets
+          fi
+    - name: Find HTTP URLs in markdown files
+      run: |
+        # Find all markdown files and search for HTTP URLs
+        find . -type f -name "*.md" -exec grep -Hn "http://" {} \; > http_urls.txt
+    
+        # Check if any HTTP URLs were found
+        if [ -s http_urls.txt ]; then
+          echo "::warning ::Found HTTP URLs in markdown files:"
+          cat http_urls.txt
+          # Optional: fail the workflow if HTTP URLs are found
+          # exit 1
+        else
+          echo "No HTTP URLs found in markdown files"
+        fi
     - name: Commit and Push
       run: |
-          touch images.txt
-          git add images.txt
+          git add http_urls.txt
           git commit -m "Add Scraped images"
           git push origin ${{ steps.branch-name.outputs.branch_name }}
     - name: Create Pull Request
