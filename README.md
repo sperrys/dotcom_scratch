@@ -6,3 +6,6 @@
 
 
 ![image](https://sperrys-fix-issue-with-isolated-subdomain-assets-in-ghes.review-lab.github.com/user-attachments/assets/d9add9ca-395e-43c0-8f0e-91674e38a544)
+
+
+![Image](https://sperrys-add-toggle-for-ghes-private-assets.review-lab.github.com/user-attachments/assets/60fc1c4c-a264-4fdd-971a-9c3a5d661e2c)
