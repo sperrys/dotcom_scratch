@@ -1,3 +1,4 @@
+![meow-nod-fast](https://github.com/user-attachments/assets/325d45f9-11f9-4450-b042-16246414bf51)
 # dotcom_scratch
 
 ![image](https://github.com/user-attachments/assets/49426100-bfd4-45f1-8cd2-3c0699cc0a74)
