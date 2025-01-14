@@ -1,6 +1,6 @@
 ![test_image_scan](https://github.com/user-attachments/assets/c115c4ef-88e6-4b7f-ab36-6cce12a5aa20)
 ![meow-nod-fast](https://github.com/user-attachments/assets/325d45f9-11f9-4450-b042-16246414bf51)
-# dotcom_scratch
+# dotcom_scratch pages
 
 ![image](https://github.com/user-attachments/assets/49426100-bfd4-45f1-8cd2-3c0699cc0a74)
 
