@@ -1,57 +1,113 @@
-# This is a basic workflow that is manually triggered
-
 name: Manual workflow
 
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on:
   workflow_dispatch:
 
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "scrape"
   scrape:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - name: Checkout Repo Code 
       uses: actions/checkout@v4
+
     - name: Generate Branch Name
       id: branch-name
       run: |
           TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
           echo "branch_name=add-markdown-scanner-${TIMESTAMP}" >> $GITHUB_OUTPUT
-    - name: Create Branch
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.8
+
+    - name: Install Dependencies
       run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
-          git checkout -b ${{ steps.branch-name.outputs.branch_name }}
-    - name: Find HTTP URLs in markdown files
-      run: |
-        # Find all markdown files and search for HTTP URLs
-        find . -type f -name "*.md" -exec grep -Hn "https://" {} \; > http_urls.txt
-    
-        # Check if any HTTP URLs were found
-        if [ -s http_urls.txt ]; then
-          echo "::warning ::Found HTTP URLs in markdown files:"
-          cat http_urls.txt
-          # Optional: fail the workflow if HTTP URLs are found
-          # exit 1
-        else
-          echo "No HTTP URLs found in markdown files"
-        fi
-    - name: Commit and Push
-      run: |
-          git add http_urls.txt
-          git commit -m "Add Scraped images"
-          git push origin ${{ steps.branch-name.outputs.branch_name }}
-    - name: Create Pull Request
-      run: gh pr create -B main -H ${{ steps.branch-name.outputs.branch_name }} --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
+        python -m pip install --upgrade pip
+        pip install requests gitpython pyyaml
+
+    - name: Replace URLs and Create PR
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        BRANCH_NAME: ${{ steps.branch-name.outputs.branch_name }}
+      run: |
+        import os
+        import re
+        import requests
+        import git
+        from pathlib import Path
+        from github import Github
+
+        # Configuration
+        GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+        REPO_NAME = os.getenv('GITHUB_REPOSITORY')
+        BRANCH_NAME = os.getenv('BRANCH_NAME')
+        PR_TITLE = 'Update asset references'
+        PR_BODY = 'This pull request updates asset references and downloads the assets into the assets folder.'
+        ASSETS_FOLDER = 'assets'
+
+        # URL Patterns to Search
+        URL_PATTERNS = [
+            re.compile(r'(https://example.com/assets/[\w\d\-_]+\.(png|jpg|jpeg|gif|svg))')
+        ]
+
+        # Initialize GitHub
+        g = Github(GITHUB_TOKEN)
+        repo = g.get_repo(REPO_NAME)
+
+        # Clone the Repo
+        repo_dir = Path(REPO_NAME.split('/')[1])
+        if repo_dir.exists():
+            repo_dir.rmdir()
+        repo = git.Repo.clone_from(f'https://github.com/{REPO_NAME}.git', repo_dir)
+        origin = repo.remote(name='origin')
+
+        # Create and checkout the new branch
+        repo.git.checkout('HEAD', b=BRANCH_NAME)
+
+        # Ensure the assets folder exists
+        assets_path = repo_dir / ASSETS_FOLDER
+        assets_path.mkdir(parents=True, exist_ok=True)
+
+        # Scan and replace URLs in markdown files
+        for md_file in repo_dir.glob('**/*.md'):
+            with open(md_file, 'r', encoding='utf-8') as file:
+                content = file.read()
+            
+            new_content = content
+            for pattern in URL_PATTERNS:
+                matches = pattern.findall(content)
+                for match in matches:
+                    url = match[0]
+                    filename = url.split('/')[-1]
+                    local_path = assets_path / filename
+
+                    # Download the asset
+                    response = requests.get(url)
+                    with open(local_path, 'wb') as asset_file:
+                        asset_file.write(response.content)
+
+                    # Replace URL with relative path
+                    new_content = new_content.replace(url, f'{ASSETS_FOLDER}/{filename}')
+            
+            # Write the updated content back to the file
+            if new_content != content:
+                with open(md_file, 'w', encoding='utf-8') as file:
+                    file.write(new_content)
+
+                # Commit the changes
+                repo.index.add([str(md_file)])
+                repo.index.commit(f'Update asset references in {md_file.name}')
+
+        # Push the new branch to the remote
+        origin.push(BRANCH_NAME)
+
+        # Create a pull request
+        user = g.get_user()
+        repo = user.get_repo(REPO_NAME.split('/')[1])
+        repo.create_pull(title=PR_TITLE, body=PR_BODY, head=BRANCH_NAME, base='main')
