@@ -10,6 +10,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -51,7 +53,7 @@ jobs:
         repo_dir = Path(os.environ['REPO_NAME'].split('/')[1])
         if repo_dir.exists():
             repo_dir.rmdir()
-        repo = git.Repo.clone_from(f'https://github.com/{os.environ["REPO_NAME"]}.git', repo_dir)
+        repo = git.Repo.clone_from(f'https://{os.environ["GITHUB_TOKEN"]}@github.com/{os.environ["REPO_NAME"]}.git', repo_dir)
         origin = repo.remote(name='origin')
 
         # Create and checkout the new branch
