@@ -4,37 +4,31 @@ on:
   workflow_dispatch:
 
 jobs:
-  scrape:
+  update-markdown-assets:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
 
     steps:
-    - name: Checkout Repo Code 
-      uses: actions/checkout@v4
-
-    - name: Generate Branch Name
-      id: branch-name
-      run: |
-          TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
-          echo "branch_name=add-markdown-scanner-${TIMESTAMP}" >> $GITHUB_OUTPUT
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: '3.8'
 
-    - name: Install Dependencies
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests gitpython pyyaml
+        pip install PyGithub gitpython requests
 
-    - name: Replace URLs and Create PR
+    - name: Update markdown asset references
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        BRANCH_NAME: ${{ steps.branch-name.outputs.branch_name }}
+        REPO_NAME: sperrys/dotcom_scratch
+        BRANCH_NAME: add-markdown-scanner-${{ github.run_id }}
+        ASSETS_FOLDER: assets
+        PR_TITLE: "Update asset references"
+        PR_BODY: "This PR updates the asset references in markdown files."
       run: |
         python << 'EOF'
         import os
@@ -105,8 +99,3 @@ jobs:
         repo = user.get_repo(os.environ['REPO_NAME'].split('/')[1])
         repo.create_pull(title=os.environ['PR_TITLE'], body=os.environ['PR_BODY'], head=os.environ['BRANCH_NAME'], base='main')
         EOF
-
-        # Create a pull request
-        user = g.get_user()
-        repo = user.get_repo(REPO_NAME.split('/')[1])
-        repo.create_pull(title=PR_TITLE, body=PR_BODY, head=BRANCH_NAME, base='main')
