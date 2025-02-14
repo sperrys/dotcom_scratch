@@ -36,42 +36,35 @@ jobs:
         GITHUB_REPOSITORY: ${{ github.repository }}
         BRANCH_NAME: ${{ steps.branch-name.outputs.branch_name }}
       run: |
+        python << 'EOF'
         import os
         import re
         import requests
-        import git
         from pathlib import Path
         from github import Github
-
-        # Configuration
-        GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
-        REPO_NAME = os.getenv('GITHUB_REPOSITORY')
-        BRANCH_NAME = os.getenv('BRANCH_NAME')
-        PR_TITLE = 'Update asset references'
-        PR_BODY = 'This pull request updates asset references and downloads the assets into the assets folder.'
-        ASSETS_FOLDER = 'assets'
+        import git
 
         # URL Patterns to Search
         URL_PATTERNS = [
-            re.compile(r'(https://example.com/assets/[\w\d\-_]+\.(png|jpg|jpeg|gif|svg))')
+            re.compile(r'(https://example.com/assets/[\\w\\d\\-_]+\\.(png|jpg|jpeg|gif|svg))')
         ]
 
         # Initialize GitHub
-        g = Github(GITHUB_TOKEN)
-        repo = g.get_repo(REPO_NAME)
+        g = Github(os.environ['GITHUB_TOKEN'])
+        repo = g.get_repo(os.environ['REPO_NAME'])
 
         # Clone the Repo
-        repo_dir = Path(REPO_NAME.split('/')[1])
+        repo_dir = Path(os.environ['REPO_NAME'].split('/')[1])
         if repo_dir.exists():
             repo_dir.rmdir()
-        repo = git.Repo.clone_from(f'https://github.com/{REPO_NAME}.git', repo_dir)
+        repo = git.Repo.clone_from(f'https://github.com/{os.environ["REPO_NAME"]}.git', repo_dir)
         origin = repo.remote(name='origin')
 
         # Create and checkout the new branch
-        repo.git.checkout('HEAD', b=BRANCH_NAME)
+        repo.git.checkout('HEAD', b=os.environ['BRANCH_NAME'])
 
         # Ensure the assets folder exists
-        assets_path = repo_dir / ASSETS_FOLDER
+        assets_path = repo_dir / os.environ['ASSETS_FOLDER']
         assets_path.mkdir(parents=True, exist_ok=True)
 
         # Scan and replace URLs in markdown files
@@ -93,7 +86,7 @@ jobs:
                         asset_file.write(response.content)
 
                     # Replace URL with relative path
-                    new_content = new_content.replace(url, f'{ASSETS_FOLDER}/{filename}')
+                    new_content = new_content.replace(url, f'{os.environ["ASSETS_FOLDER"]}/{filename}')
             
             # Write the updated content back to the file
             if new_content != content:
@@ -105,7 +98,13 @@ jobs:
                 repo.index.commit(f'Update asset references in {md_file.name}')
 
         # Push the new branch to the remote
-        origin.push(BRANCH_NAME)
+        origin.push(os.environ['BRANCH_NAME'])
+
+        # Create a pull request
+        user = g.get_user()
+        repo = user.get_repo(os.environ['REPO_NAME'].split('/')[1])
+        repo.create_pull(title=os.environ['PR_TITLE'], body=os.environ['PR_BODY'], head=os.environ['BRANCH_NAME'], base='main')
+        EOF
 
         # Create a pull request
         user = g.get_user()
