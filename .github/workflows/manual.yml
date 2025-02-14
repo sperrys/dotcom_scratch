@@ -53,7 +53,10 @@ jobs:
         repo_dir = Path(os.environ['REPO_NAME'].split('/')[1])
         if repo_dir.exists():
             repo_dir.rmdir()
-        repo = git.Repo.clone_from(f'https://{os.environ["GITHUB_TOKEN"]}@github.com/{os.environ["REPO_NAME"]}.git', repo_dir)
+
+        git_path = f'https://{os.environ["GITHUB_TOKEN"]}@github.com/{os.environ["REPO_NAME"]}.git'
+        print('git path', git_path)
+        repo = git.Repo.clone_from(git_path, repo_dir)
         origin = repo.remote(name='origin')
 
         # Create and checkout the new branch
