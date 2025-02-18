@@ -40,8 +40,7 @@ jobs:
         
         # Config 
         token = os.environ['GITHUB_TOKEN']
-        workspace = os.environ['GITHUB_WORKSPACE']
-        print(workspace)
+        workspace = Path(os.environ['GITHUB_WORKSPACE'])
 
         repo_reference = os.environ['GITHUB_REPOSITORY']
         branch_name = os.environ['BRANCH_NAME']
