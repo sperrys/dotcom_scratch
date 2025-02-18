@@ -1,4 +1,4 @@
-name: Manual workflow
+name: Scrape github urls to local assets
 
 on:
   workflow_dispatch:
@@ -26,9 +26,8 @@ jobs:
     - name: Update markdown asset references
       env:
         GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-        REPO_NAME: sperrys/dotcom_scratch
         BRANCH_NAME: add-markdown-scanner-${{ github.run_id }}
-        PR_TITLE: "Update asset references"
+        PR_TITLE: "Update asset references ${{ github.run_id }}"
       run: |
         python << 'EOF'
         import os
@@ -39,10 +38,9 @@ jobs:
         from github import Github
         import git
         
-        
         # Config 
         token = os.environ['GITHUB_TOKEN']
-        repo_reference = os.environ['REPO_NAME']
+        repo_reference = os.environ['GITHUB_REPOSITORY']
         branch_name = os.environ['BRANCH_NAME']
         
         asset_folder_name = os.environ.get('ASSETS_FOLDER', 'assets')
