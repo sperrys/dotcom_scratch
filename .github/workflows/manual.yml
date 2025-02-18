@@ -94,9 +94,10 @@ jobs:
             path_parts = normalized_path.split(os.sep)
             if normalized_prefix in path_parts:
                 prefix_index = path_parts.index(normalized_prefix)
-                return os.sep.join(path_parts[prefix_index + 1:])
-            else:
-                return path
+                path = os.sep.join(path_parts[prefix_index + 1:])
+            print(path)
+            return path
+            
         
         def parse_guid_from_cannonical_url(url):
             return url.split('/')[-1]
