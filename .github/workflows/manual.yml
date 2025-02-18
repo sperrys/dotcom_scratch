@@ -41,7 +41,6 @@ jobs:
         # Config 
         token = os.environ['GITHUB_TOKEN']
         workspace = Path(os.environ['GITHUB_WORKSPACE'])
-
         repo_reference = os.environ['GITHUB_REPOSITORY']
         branch_name = os.environ['BRANCH_NAME']
         
@@ -60,16 +59,11 @@ jobs:
         # Clone the repository locally
         repo = g.get_repo(repo_reference)
         repo_name  = repo.name
-        clone_url = repo.clone_url.replace("https://", f"https://{token}@")
-        clone_dir =  workspace #Path(os.path.join(os.getcwd(), repo_name))
-        assets_dir = os.path.join(clone_dir, asset_folder_name)
+        assets_dir = os.path.join(workspace, asset_folder_name)
         pr_body = "This is an automated pull request that attempts to convert embedded github asset url references into local assets that live in the repo's `assets/` folder.\n\n"
-        
-        #if os.path.exists(clone_dir):
-        #    shutil.rmtree(clone_dir)
-        
-        git_repo = git.Repo(clone_dir)
-        print(f"Repository {repo_name} cloned successfully to {clone_dir}")
+
+        git_repo = git.Repo(workspace)
+        print(f"Repository {repo_name} cloned successfully to {workspace.resolve()}")
         
         # Given a relative file path from the repo root, 
         # use the GH API to render the blob into html
@@ -169,7 +163,7 @@ jobs:
             # Create and checkout the new branch
             origin = git_repo.remote(name='origin')
             git_repo.git.checkout('HEAD', b=branch_name)
-            markdown_files = clone_dir.glob('**/*.md')
+            markdown_files = workspace.glob('**/*.md')
             # Scan and replace URLs in markdown files
             for file_ref in markdown_files:
                 with open(file_ref, 'r', encoding='utf-8') as file:
