@@ -69,8 +69,8 @@ jobs:
         if os.path.exists(clone_dir):
             shutil.rmtree(clone_dir)
         
-        git_repo = git.Repo.clone_from(clone_url, clone_dir.resolve())
-        print(f"Repository {repo_name} cloned successfully to {clone_dir.resolve()}")
+        git_repo = git.Repo(clone_dir)
+        print(f"Repository {repo_name} cloned successfully to {clone_dir}")
         
         # Given a relative file path from the repo root, 
         # use the GH API to render the blob into html
