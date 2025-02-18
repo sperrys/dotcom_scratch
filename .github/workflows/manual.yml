@@ -89,15 +89,16 @@ jobs:
             return response.text
         
         def remove_prefix(path, prefix):
-            normalized_path = os.path.normpath(path)
-            normalized_prefix = os.path.normpath(prefix)
-            while normalized_prefix in normalized_path:
-                normalized_path = normalized_path.replace(normalized_prefix + os.sep, '', 1)
-            # Ensure the first part of the path is not the prefix
-            if normalized_path.startswith(normalized_prefix + os.sep):
-                normalized_path = normalized_path[len(normalized_prefix + os.sep):]
-            print(normalized_path)
-            return normalized_path
+          normalized_path = os.path.normpath(path)
+          normalized_prefix = os.path.normpath(prefix)
+          path_parts = normalized_path.split(os.sep)
+          prefix_parts = normalized_prefix.split(os.sep)
+          
+          # Remove all instances of the prefix parts from the path parts
+          while path_parts[:len(prefix_parts)] == prefix_parts:
+              path_parts = path_parts[len(prefix_parts):]
+          
+          return os.sep.join(path_parts)
             
         
         def parse_guid_from_cannonical_url(url):
