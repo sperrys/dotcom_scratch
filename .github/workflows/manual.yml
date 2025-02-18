@@ -89,6 +89,7 @@ jobs:
             return response.text
         
         def remove_prefix(path, prefix):
+            print(path, prefix)
             normalized_path = os.path.normpath(path)
             normalized_prefix = os.path.normpath(prefix)
             path_parts = normalized_path.split(os.sep)
