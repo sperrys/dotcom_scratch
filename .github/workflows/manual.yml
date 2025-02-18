@@ -89,16 +89,10 @@ jobs:
             return response.text
         
         def remove_prefix(path, prefix):
-          normalized_path = os.path.normpath(path)
-          normalized_prefix = os.path.normpath(prefix)
-          path_parts = normalized_path.split(os.sep)
-          prefix_parts = normalized_prefix.split(os.sep)
-          
-          # Remove all instances of the prefix parts from the path parts
-          while path_parts[:len(prefix_parts)] == prefix_parts:
-              path_parts = path_parts[len(prefix_parts):]
-          
-          return os.sep.join(path_parts)
+            last_index = absolute_url.rfind(repo_name)
+            if last_index == -1:
+                return absolute_url  # repo_name not found, return the original URL
+            return absolute_url[last_index + len(repo_name):]
             
         
         def parse_guid_from_cannonical_url(url):
