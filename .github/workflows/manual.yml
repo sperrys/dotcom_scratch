@@ -76,6 +76,7 @@ jobs:
         # use the GH API to render the blob into html
         def render_markdown_file_to_html(path):
             url = f'{github_api_url}/repos/{repo_reference}/contents/{path}'
+            print(url)
             headers = { 
                 "Authorization": f'Bearer {token}',
                 "Accept" : "application/vnd.github.html+json",
