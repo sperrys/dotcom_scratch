@@ -92,12 +92,10 @@ jobs:
             print(path, prefix)
             normalized_path = os.path.normpath(path)
             normalized_prefix = os.path.normpath(prefix)
-            path_parts = normalized_path.split(os.sep)
-            if normalized_prefix in path_parts:
-                prefix_index = path_parts.index(normalized_prefix)
-                path = os.sep.join(path_parts[prefix_index + 1:])
-            print(path)
-            return path
+            while normalized_prefix in normalized_path:
+              normalized_path = normalized_path.replace(normalized_prefix + os.sep, '', 1)
+            print(normalized_path)
+            return normalized_path
             
         
         def parse_guid_from_cannonical_url(url):
